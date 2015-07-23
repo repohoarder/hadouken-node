@@ -12,10 +12,10 @@ include_directories(
 )
 
 link_directories(
-    C:/Code/vktr/io.js/Release/lib
-    C:/Code/vktr/io.js/build/Release/lib
+    C:/Code/vktr/io.js/$(Configuration)/lib
+    C:/Code/vktr/io.js/build/$(Configuration)/lib
     C:/Libs/boost_1_58_0/stage/lib
-    C:/Libs/libtorrent-rasterbar-1.0.5/bin/msvc-12.0/release/address-model-64/boost-source/link-static/runtime-link-static/threading-multi
+    C:/Libs/libtorrent-rasterbar-1.0.5/bin/msvc-12.0/$(Configuration)/address-model-64/boost-source/link-static/runtime-link-static/threading-multi
 )
 
 set(
@@ -55,5 +55,6 @@ add_executable(
 target_link_libraries(
     hadouken
     ${IOJS_LIBS}
+    dbghelp.lib
     libtorrent.lib
 )

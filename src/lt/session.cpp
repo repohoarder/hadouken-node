@@ -10,53 +10,46 @@
 using namespace lt;
 using namespace v8;
 
+Session::Session(libtorrent::session* session)
+    : session_(session)
+{
+}
+
+Session::~Session()
+{
+    if (session_ != nullptr)
+    {
+        delete session_;
+    }
+}
+
 void Session::Initialize(node::Environment* env, Handle<Object> exports)
 {
-    Local<FunctionTemplate> t = env->NewFunctionTemplate(New);
+    Isolate* isolate = exports->GetIsolate();
+
+    Local<FunctionTemplate> t = FunctionTemplate::New(isolate, New);
+    t->SetClassName(String::NewFromUtf8(isolate, "Session"));
     t->InstanceTemplate()->SetInternalFieldCount(1);
 
-    env->SetProtoMethod(t, "isPaused", IsPaused);
+    t->PrototypeTemplate()->SetAccessor(String::NewFromUtf8(isolate, "isPaused"), IsPaused);
 
-    exports->Set(FIXED_ONE_BYTE_STRING(env->isolate(), "Session"), t->GetFunction());
+    exports->Set(String::NewFromUtf8(isolate, "Session"), t->GetFunction());
 }
 
-void Session::New(const v8::FunctionCallbackInfo<v8::Value>& args)
+void Session::New(const FunctionCallbackInfo<Value>& args)
 {
-    node::Environment* env = node::Environment::GetCurrent(args);
-    Session* sess = new Session(env, args.This());
-    bool initialized = false;
+    CHECK(args.IsConstructCall());
+    Isolate* isolate = args.GetIsolate();
 
-    if (args.Length() == 1) // Fingerprint
-    {
-        Fingerprint* fp = node::Unwrap<Fingerprint>(args[0].As<v8::Object>());
-        initialized = sess->Init(fp);
-    }
-    else
-    {
-        initialized = sess->Init();
-    }
-
-    if (!initialized)
-    {
-        return env->ThrowError("Initialization failed.");
-    }
+    Session* sess = new Session(new libtorrent::session());
+    sess->Wrap(args.This());
+    args.GetReturnValue().Set(args.This());
 }
 
-void Session::IsPaused(const v8::FunctionCallbackInfo<v8::Value>& args)
+void Session::IsPaused(Local<String> prop, const PropertyCallbackInfo<Value>& info)
 {
-    Session* sess = node::Unwrap<Session>(args.Holder());
+    HandleScope scope(info.GetIsolate());
+    Session* session = ObjectWrap::Unwrap<Session>(info.This());
+    info.GetReturnValue().Set(Boolean::New(info.GetIsolate(), session->session_->is_paused()));
 }
 
-bool Session::Init()
-{
-    session_ = new libtorrent::session();
-    initialized_ = true;
-    return true;
-}
-
-bool Session::Init(Fingerprint* fingerprint)
-{
-    session_ = new libtorrent::session(*fingerprint->fp_);
-    initialized_ = true;
-    return true;
-}

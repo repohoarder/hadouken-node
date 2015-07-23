@@ -72,8 +72,6 @@ int main(int argc, char *argv[])
     int exec_argc;
     const char** exec_argv;
     node::Init(&argc, const_cast<const char**>(argv), &exec_argc, &exec_argv);
-    
-    
 
     v8::Platform* platform = v8::platform::CreateDefaultPlatform(4);
     v8::V8::InitializePlatform(platform);

@@ -35,7 +35,7 @@ namespace lt
         
         static void GetName(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-        bool Init(const char* id, int major, int minor, int revision, int tag);
+        bool Init(std::string id, int major, int minor, int revision, int tag);
 
     private:
         bool initialized_;

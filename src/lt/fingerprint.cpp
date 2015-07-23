@@ -63,9 +63,9 @@ void Fingerprint::GetName(const FunctionCallbackInfo<Value>& args)
     }
 }
 
-bool Fingerprint::Init(const char* id, int major, int minor, int revision, int tag)
+bool Fingerprint::Init(std::string id, int major, int minor, int revision, int tag)
 {
-    fp_ = new libtorrent::fingerprint(id, major, minor, revision, tag);
+    fp_ = new libtorrent::fingerprint(id.c_str(), major, minor, revision, tag);
     initialized_ = true;
     return true;
 }
