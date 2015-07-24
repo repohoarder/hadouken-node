@@ -47,8 +47,10 @@ add_definitions(
 add_executable(
     hadouken
     src/libtorrent
+    src/lt/addtorrentparams
     src/lt/fingerprint
     src/lt/session
+    src/lt/torrentinfo
     src/main
 )
 
