@@ -81,7 +81,6 @@ void AddTorrentParams::SetTorrentInfo(Local<String> prop, Local<Value> value, co
     AddTorrentParams* p = ObjectWrap::Unwrap<AddTorrentParams>(info.This());
     TorrentInfo* ti = ObjectWrap::Unwrap<TorrentInfo>(value->ToObject());
     p->params_->ti = ti->info_;
-    p->ti_ = ti;
 }
 
 void AddTorrentParams::GetName(Local<String> prop, const PropertyCallbackInfo<Value>& info)

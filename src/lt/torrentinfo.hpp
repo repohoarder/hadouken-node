@@ -12,9 +12,9 @@ namespace lt
     class TorrentInfo : public node::ObjectWrap
     {
     public:
-        explicit TorrentInfo(boost::intrusive_ptr<libtorrent::torrent_info> info);
-
         static void Initialize(v8::Handle<v8::Object> exports);
+
+        static void NewInstance(const v8::PropertyCallbackInfo<v8::Value>& info, boost::intrusive_ptr<libtorrent::torrent_info> ti);
         
         boost::intrusive_ptr<libtorrent::torrent_info> info_;
 
@@ -24,7 +24,10 @@ namespace lt
         static void GetName(v8::Local<v8::String> prop, const v8::PropertyCallbackInfo<v8::Value>& info);
 
     private:
+        explicit TorrentInfo(boost::intrusive_ptr<libtorrent::torrent_info> info);
         ~TorrentInfo();
+
+        static v8::Persistent<v8::Function> ctor_;
     };
 }
 

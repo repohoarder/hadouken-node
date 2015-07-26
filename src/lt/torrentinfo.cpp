@@ -11,6 +11,8 @@
 using namespace lt;
 using namespace v8;
 
+v8::Persistent<v8::Function> TorrentInfo::ctor_;
+
 TorrentInfo::TorrentInfo(boost::intrusive_ptr<libtorrent::torrent_info> info)
     : info_(info)
 {
@@ -66,7 +68,12 @@ void TorrentInfo::Initialize(Handle<Object> exports)
     // metadata
     // is_merkle_torrent
 
+    ctor_.Reset(isolate, t->GetFunction());
     exports->Set(String::NewFromUtf8(isolate, "TorrentInfo"), t->GetFunction());
+}
+
+void TorrentInfo::NewInstance(const PropertyCallbackInfo<Value>& info, boost::intrusive_ptr<libtorrent::torrent_info> ti)
+{
 }
 
 void TorrentInfo::New(const FunctionCallbackInfo<Value>& args)
