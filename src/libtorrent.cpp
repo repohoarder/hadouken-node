@@ -8,6 +8,8 @@
 #include "lt/fingerprint.hpp"
 #include "lt/session.hpp"
 #include "lt/torrentinfo.hpp"
+#include "lt/torrentstatus.hpp"
+#include "lt/torrenthandle.hpp"
 
 using namespace v8;
 
@@ -26,6 +28,8 @@ namespace
         lt::Fingerprint::Initialize(env, exports);
         lt::Session::Initialize(env, exports);
         lt::TorrentInfo::Initialize(exports);
+        lt::TorrentStatus::Initialize(exports);
+        lt::TorrentHandle::Initialize(exports);
     }
 }
 

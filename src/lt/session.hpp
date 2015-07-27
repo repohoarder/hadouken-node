@@ -19,6 +19,7 @@ namespace lt
     protected:
         static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+        static void GetTorrents(const v8::FunctionCallbackInfo<v8::Value>& info);
         static void AddTorrent(const v8::FunctionCallbackInfo<v8::Value>& info);
         static void Resume(const v8::FunctionCallbackInfo<v8::Value>& info);
         static void Pause(const v8::FunctionCallbackInfo<v8::Value>& info);
@@ -35,6 +36,9 @@ namespace lt
         static void StartNatPmp(const v8::FunctionCallbackInfo<v8::Value>& info);
 
     private:
+        static void AlertDispatch(Session* session, std::auto_ptr<libtorrent::alert> alert);
+        static void HandleAlert(uv_async_t* handle);
+
         explicit Session(libtorrent::session* session = 0);
         ~Session();
 

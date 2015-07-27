@@ -5,13 +5,22 @@
 #include <v8.h>
 #include <libtorrent/session.hpp>
 
+#include "addtorrentparams.hpp"
 #include "fingerprint.hpp"
+#include "torrenthandle.hpp"
 
 #define HDKN_SET_PROTO_PROPGET(tpl, name, func) \
     tpl->PrototypeTemplate()->SetAccessor(String::NewFromUtf8(isolate, name), func)
 
 using namespace lt;
 using namespace v8;
+
+uv_async_t alert_async;
+
+struct dispatch_data {
+    Session* session;
+    libtorrent::alert* alert;
+};
 
 Session::Session(libtorrent::session* session)
     : session_(session)
@@ -40,7 +49,7 @@ void Session::Initialize(node::Environment* env, Handle<Object> exports)
     // get_torrent_status
     // post_torrent_updates
     // find_torrent
-    // get_torrents
+    NODE_SET_PROTOTYPE_METHOD(t, "getTorrents", GetTorrents);
     // async_add_torrent
     NODE_SET_PROTOTYPE_METHOD(t, "addTorrent", AddTorrent);
     // abort
@@ -99,6 +108,9 @@ void Session::Initialize(node::Environment* env, Handle<Object> exports)
     NODE_SET_PROTOTYPE_METHOD(t, "stopNatPmp", StopNatPmp);
     NODE_SET_PROTOTYPE_METHOD(t, "startNatPmp", StartNatPmp);
 
+    // alert dispatch async
+    uv_async_init(uv_default_loop(), &alert_async, HandleAlert);
+
     exports->Set(String::NewFromUtf8(isolate, "Session"), t->GetFunction());
 }
 
@@ -108,14 +120,27 @@ void Session::New(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = args.GetIsolate();
 
     Session* sess = new Session(new libtorrent::session());
+
     sess->Wrap(args.This());
+    sess->session_->set_alert_mask(libtorrent::alert::category_t::all_categories);
+    sess->session_->set_alert_dispatch(std::bind(AlertDispatch, sess, std::placeholders::_1));
+
     args.GetReturnValue().Set(args.This());
+}
+
+void Session::GetTorrents(const FunctionCallbackInfo<Value>& info)
+{
+    Session* session = ObjectWrap::Unwrap<Session>(info.This());
+    std::vector<libtorrent::torrent_handle> torrents = session->session_->get_torrents();
 }
 
 void Session::AddTorrent(const FunctionCallbackInfo<Value>& info)
 {
-    //
-    info.GetReturnValue().Set(Undefined(info.GetIsolate()));
+    Session* session = ObjectWrap::Unwrap<Session>(info.This());
+    AddTorrentParams* params = ObjectWrap::Unwrap<AddTorrentParams>(info[0]->ToObject());
+
+    libtorrent::torrent_handle handle = session->session_->add_torrent(*params->params_);
+    TorrentHandle::NewInstance(info, new libtorrent::torrent_handle(handle));
 }
 
 void Session::Resume(const FunctionCallbackInfo<Value>& info)
@@ -194,5 +219,20 @@ void Session::StartNatPmp(const FunctionCallbackInfo<Value>& info)
 {
     ObjectWrap::Unwrap<Session>(info.This())->session_->start_natpmp();
     info.GetReturnValue().Set(Undefined(info.GetIsolate()));
+}
+
+void Session::AlertDispatch(Session* session, std::auto_ptr<libtorrent::alert> alert)
+{
+    dispatch_data* data = new dispatch_data();
+    data->alert = alert.release();
+    data->session = session;
+
+    alert_async.data = data;
+    uv_async_send(&alert_async);
+}
+
+void Session::HandleAlert(uv_async_t* handle)
+{
+    dispatch_data* data = static_cast<dispatch_data*>(handle->data);
 }
 

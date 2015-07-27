@@ -51,6 +51,8 @@ add_executable(
     src/lt/fingerprint
     src/lt/session
     src/lt/torrentinfo
+    src/lt/torrenthandle
+    src/lt/torrentstatus
     src/main
 )
 
