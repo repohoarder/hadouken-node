@@ -73,7 +73,7 @@ void AddTorrentParams::New(const FunctionCallbackInfo<Value>& args)
 void AddTorrentParams::GetTorrentInfo(Local<String> prop, const PropertyCallbackInfo<Value>& info)
 {
     AddTorrentParams* p = ObjectWrap::Unwrap<AddTorrentParams>(info.This());
-    info.GetReturnValue().Set(External::New(info.GetIsolate(), p->ti_));
+    TorrentInfo::NewInstance(info, p->params_->ti.get());
 }
 
 void AddTorrentParams::SetTorrentInfo(Local<String> prop, Local<Value> value, const PropertyCallbackInfo<void>& info)

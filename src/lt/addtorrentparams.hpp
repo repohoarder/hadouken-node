@@ -48,8 +48,6 @@ namespace lt
     private:
         explicit AddTorrentParams(libtorrent::add_torrent_params* session);
         ~AddTorrentParams();
-
-        TorrentInfo* ti_;
     };
 }
 
